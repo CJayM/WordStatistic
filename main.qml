@@ -15,52 +15,98 @@ ApplicationWindow {
 
         ListElement {
             word: "First word"
-            count: 39
+            count: 88
         }
         ListElement {
             word: "Second word"
-            count: 43
+            count: 76
         }
         ListElement {
             word: "Third word"
-            count: 28
+            count: 63
+        }
+        ListElement {
+            word: "Fourth word"
+            count: 62
+        }
+        ListElement {
+            word: "Fifth word"
+            count: 58
+        }
+        ListElement {
+            word: "Sixth word"
+            count: 55
+        }
+        ListElement {
+            word: "Seventh word"
+            count: 43
+        }
+        ListElement {
+            word: "Eighth word"
+            count: 40
+        }
+        ListElement {
+            word: "Ninth word"
+            count: 38
+        }
+        ListElement {
+            word: "Tenth word"
+            count: 36
+        }
+        ListElement {
+            word: "Eleventh word"
+            count: 34
+        }
+        ListElement {
+            word: "Twelfth word"
+            count: 22
+        }
+        ListElement {
+            word: "Thirteenth word"
+            count: 19
+        }
+        ListElement {
+            word: "Fourteenth word"
+            count: 13
+        }
+        ListElement {
+            word: "Fifteenth word"
+            count: 9
         }
     }
 
-    Rectangle {
-        id: chart
+    header: Item {
+        width: root.width
+        height: 22
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 4
+            font.pointSize: 18
+            text: "Статистика слов в файле"
+            color: "white"
+        }
+    }
+
+    background: Rectangle {
         anchors.fill: parent
-
-        color: "red"
-
-        Column {
-            anchors.fill: parent
-            padding: 4
-            spacing: 4
-
-            Repeater {
-                model: words_model
-
-                Rectangle {
-                    width: parent.width
-                    height: parent.height / words_model.count
-                    color: "gray"
-
-                    Rectangle {
-                        width: parent.width* (model.count/ 43)
-                        height: parent.height
-
-                        color: "lightblue"
-
-                        Text {
-                            x: 12
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: model.word
-                        }
-                    }
-                }
+        gradient: Gradient {
+            GradientStop {
+                position: 0.0
+                color: "#293863"
+            }
+            GradientStop {
+                position: 1.0
+                color: "#212e51"
             }
         }
+    }
+
+    Histogram {
+        id: chart
+        margin: 12
+        anchors.fill: parent
     }
 
     FileDialog {
@@ -76,8 +122,11 @@ ApplicationWindow {
 
     footer: ToolBar {
         id: footer
+        visible: true
+
         Flow {
             anchors.fill: parent
+
             Text {
                 id: text_path
                 text: qsTr("Opened document")
