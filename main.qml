@@ -10,11 +10,57 @@ ApplicationWindow {
     visible: true
     title: qsTr("Word Statistics")
 
+    ListModel {
+        id: words_model
+
+        ListElement {
+            word: "First word"
+            count: 39
+        }
+        ListElement {
+            word: "Second word"
+            count: 43
+        }
+        ListElement {
+            word: "Third word"
+            count: 28
+        }
+    }
+
     Rectangle {
         id: chart
         anchors.fill: parent
 
         color: "red"
+
+        Column {
+            anchors.fill: parent
+            padding: 4
+            spacing: 4
+
+            Repeater {
+                model: words_model
+
+                Rectangle {
+                    width: parent.width
+                    height: parent.height / words_model.count
+                    color: "gray"
+
+                    Rectangle {
+                        width: parent.width* (model.count/ 43)
+                        height: parent.height
+
+                        color: "lightblue"
+
+                        Text {
+                            x: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: model.word
+                        }
+                    }
+                }
+            }
+        }
     }
 
     FileDialog {
