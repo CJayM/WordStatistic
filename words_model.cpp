@@ -33,6 +33,16 @@ void WordsModel::generateRandomData()
 	endResetModel();
 }
 
+void WordsModel::reset(QList<WordItem> statistics)
+{
+	beginResetModel();
+	_data.clear();
+	for(const auto& item: statistics)
+		_data.append(item);
+
+	endResetModel();
+}
+
 int WordsModel::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid())

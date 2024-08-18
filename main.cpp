@@ -10,6 +10,9 @@
 int main(int argc, char* argv[])
 {
 	QGuiApplication app(argc, argv);
+	app.setOrganizationName("Noname");
+	app.setOrganizationDomain("nn.ru");
+	app.setApplicationName("WordStatistics");
 
 	QQuickStyle::setStyle("Material");
 
@@ -30,8 +33,7 @@ int main(int argc, char* argv[])
 		  if (!obj && url == objUrl)
 			  QCoreApplication::exit(-1);
 
-		  QObject::connect(obj, SIGNAL(sgnStart()), controller.get(), SLOT(onSgnStart()));
-
+		  controller->setQmlRoot(obj);
 	  },
 	  Qt::QueuedConnection);
 	engine.load(url);

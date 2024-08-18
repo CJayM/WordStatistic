@@ -10,11 +10,15 @@ class Controller : public QObject
   public:
     explicit Controller(WordsModel& model, QObject* parent = nullptr);
 
+    void setQmlRoot(QObject* root);
+
   signals:
   public slots:
-    void onSgnStart();
+    void onSgnStart(QString filePath);
+    void onSgnReset();
 
   private:
     WordsModel& _model;
+    QObject* _root;
 };
 
