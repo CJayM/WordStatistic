@@ -12,6 +12,7 @@ ApplicationWindow {
     title: qsTr("Word Statistics")
 
     signal sgnStart(string filePath)
+    signal sgnReset()
 
     property string filePath: ""
 
@@ -97,7 +98,14 @@ ApplicationWindow {
             ToolButton {
                 text: qsTr("Stop")
                 icon.name: "media-playback-stop"
+                onClicked: resetState()
             }
         }
+    }
+
+    function resetState(){
+        console.log("State reset to default");
+        root.filePath = "";
+        root.sgnReset();
     }
 }

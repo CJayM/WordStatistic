@@ -11,3 +11,8 @@ void Controller::onSgnStart(QString filePath)
 	qDebug() << "Pressed Start button for file " << filePath;
 	_model.generateRandomData();
 }
+
+void Controller::onSgnReset()
+{
+	_model.reset();
+}
