@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
+import QtCore
 
 ApplicationWindow {
     id: root
@@ -11,6 +12,16 @@ ApplicationWindow {
     title: qsTr("Word Statistics")
 
     signal sgnStart()
+
+    property string filePath: ""
+
+    Settings {
+        property alias x: root.x
+        property alias y: root.y
+        property alias width: root.width
+        property alias height: root.height
+        property alias fliePath: root.filePath
+    }
 
     header: Item {
         width: root.width
@@ -54,7 +65,7 @@ ApplicationWindow {
         nameFilters: ["Text files (*.txt)", "Markdown files (*.md)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
-            text_path.text = fileOpenDialog.currentFile
+            root.filePath = fileOpenDialog.currentFile;
         }
     }
 
@@ -66,8 +77,8 @@ ApplicationWindow {
             anchors.fill: parent
 
             Text {
-                id: text_path
-                text: qsTr("Opened document")
+                id: txtFilepath
+                text: root.filePath
             }
             ToolButton {
                 text: qsTr("Open")

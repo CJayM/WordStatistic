@@ -10,6 +10,9 @@
 int main(int argc, char* argv[])
 {
 	QGuiApplication app(argc, argv);
+	app.setOrganizationName("Noname");
+	app.setOrganizationDomain("nn.ru");
+	app.setApplicationName("WordStatistics");
 
 	QQuickStyle::setStyle("Material");
 
