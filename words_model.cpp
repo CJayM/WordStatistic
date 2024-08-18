@@ -33,10 +33,13 @@ void WordsModel::generateRandomData()
 	endResetModel();
 }
 
-void WordsModel::reset()
+void WordsModel::reset(QList<WordItem> statistics)
 {
 	beginResetModel();
 	_data.clear();
+	for(const auto& item: statistics)
+		_data.append(item);
+
 	endResetModel();
 }
 

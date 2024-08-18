@@ -22,7 +22,7 @@ class WordsModel : public QAbstractListModel
 	explicit WordsModel(QObject* parent = nullptr);
 
 	void generateRandomData();
-	void reset();
+	void reset(QList<WordItem> statistics);
 
 	// QAbstractItemModel interface
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
