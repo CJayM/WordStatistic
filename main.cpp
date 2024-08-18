@@ -1,9 +1,11 @@
+#include "controller.h"
 #include "words_model.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQuickStyle>
 #include <QQmlContext>
+#include <QQuickStyle>
+#include <memory>
 
 int main(int argc, char* argv[])
 {
@@ -12,8 +14,10 @@ int main(int argc, char* argv[])
 	QQuickStyle::setStyle("Material");
 
 	WordsModel model;
-	model.generateRandomData();
+	auto controller = std::make_shared<Controller>(model);
+
 	QQmlApplicationEngine engine;
+
 	QQmlContext* context = engine.rootContext();
 	context->setContextProperty("wordsModel", &model);
 
@@ -22,9 +26,12 @@ int main(int argc, char* argv[])
 	  &engine,
 	  &QQmlApplicationEngine::objectCreated,
 	  &app,
-	  [url](QObject* obj, const QUrl& objUrl) {
+	  [url, controller](QObject* obj, const QUrl& objUrl) {
 		  if (!obj && url == objUrl)
 			  QCoreApplication::exit(-1);
+
+		  QObject::connect(obj, SIGNAL(sgnStart()), controller.get(), SLOT(onSgnStart()));
+
 	  },
 	  Qt::QueuedConnection);
 	engine.load(url);

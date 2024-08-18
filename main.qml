@@ -8,7 +8,9 @@ ApplicationWindow {
     width: 640
     height: 480
     visible: true
-    title: qsTr("Word Statistics")    
+    title: qsTr("Word Statistics")
+
+    signal sgnStart()
 
     header: Item {
         width: root.width
@@ -75,6 +77,7 @@ ApplicationWindow {
             ToolButton {
                 text: qsTr("Start")
                 icon.name: "media-playback-start"
+                onClicked: root.sgnStart()
             }
             ToolButton {
                 text: qsTr("Pause")

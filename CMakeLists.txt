@@ -24,6 +24,7 @@ qt_add_qml_module(appword_statistics
     QML_FILES main.qml
     QML_FILES Histogram.qml
     SOURCES words_model.h words_model.cpp
+    SOURCES controller.h controller.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
