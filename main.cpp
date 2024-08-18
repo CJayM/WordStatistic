@@ -33,8 +33,7 @@ int main(int argc, char* argv[])
 		  if (!obj && url == objUrl)
 			  QCoreApplication::exit(-1);
 
-		  QObject::connect(obj, SIGNAL(sgnStart(QString)), controller.get(), SLOT(onSgnStart(QString)));
-		  QObject::connect(obj, SIGNAL(sgnReset()), controller.get(), SLOT(onSgnReset()));
+		  controller->setQmlRoot(obj);
 	  },
 	  Qt::QueuedConnection);
 	engine.load(url);

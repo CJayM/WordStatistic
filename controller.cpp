@@ -9,6 +9,17 @@ Controller::Controller(WordsModel& model, QObject* parent)
     , _model(model)
 {}
 
+void Controller::setQmlRoot(QObject* root)
+{
+	_root = root;
+
+	if (root == nullptr)
+		return;
+
+	QObject::connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
+	QObject::connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+}
+
 void Controller::onSgnStart(QString filePath)
 {
 	qDebug() << "Pressed Start button for file " << filePath;

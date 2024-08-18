@@ -10,6 +10,8 @@ class Controller : public QObject
   public:
     explicit Controller(WordsModel& model, QObject* parent = nullptr);
 
+    void setQmlRoot(QObject* root);
+
   signals:
   public slots:
     void onSgnStart(QString filePath);
@@ -17,5 +19,6 @@ class Controller : public QObject
 
   private:
     WordsModel& _model;
+    QObject* _root;
 };
 
