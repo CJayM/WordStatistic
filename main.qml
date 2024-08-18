@@ -11,7 +11,7 @@ ApplicationWindow {
     visible: true
     title: qsTr("Word Statistics")
 
-    signal sgnStart()
+    signal sgnStart(string filePath)
 
     property string filePath: ""
 
@@ -88,7 +88,7 @@ ApplicationWindow {
             ToolButton {
                 text: qsTr("Start")
                 icon.name: "media-playback-start"
-                onClicked: root.sgnStart()
+                onClicked: root.sgnStart(root.filePath)
             }
             ToolButton {
                 text: qsTr("Pause")

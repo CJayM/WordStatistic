@@ -6,8 +6,8 @@ Controller::Controller(WordsModel& model, QObject* parent)
     , _model(model)
 {}
 
-void Controller::onSgnStart()
+void Controller::onSgnStart(QString filePath)
 {
-	qDebug() << "Pressed Start button";
+	qDebug() << "Pressed Start button for file " << filePath;
 	_model.generateRandomData();
 }

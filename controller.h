@@ -12,7 +12,7 @@ class Controller : public QObject
 
   signals:
   public slots:
-    void onSgnStart();
+    void onSgnStart(QString filePath);
 
   private:
     WordsModel& _model;
