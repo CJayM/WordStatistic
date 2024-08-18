@@ -8,72 +8,7 @@ ApplicationWindow {
     width: 640
     height: 480
     visible: true
-    title: qsTr("Word Statistics")
-
-    ListModel {
-        id: words_model
-
-        ListElement {
-            word: "First word"
-            count: 88
-        }
-        ListElement {
-            word: "Second word"
-            count: 76
-        }
-        ListElement {
-            word: "Third word"
-            count: 63
-        }
-        ListElement {
-            word: "Fourth word"
-            count: 62
-        }
-        ListElement {
-            word: "Fifth word"
-            count: 58
-        }
-        ListElement {
-            word: "Sixth word"
-            count: 55
-        }
-        ListElement {
-            word: "Seventh word"
-            count: 43
-        }
-        ListElement {
-            word: "Eighth word"
-            count: 40
-        }
-        ListElement {
-            word: "Ninth word"
-            count: 38
-        }
-        ListElement {
-            word: "Tenth word"
-            count: 36
-        }
-        ListElement {
-            word: "Eleventh word"
-            count: 34
-        }
-        ListElement {
-            word: "Twelfth word"
-            count: 22
-        }
-        ListElement {
-            word: "Thirteenth word"
-            count: 19
-        }
-        ListElement {
-            word: "Fourteenth word"
-            count: 13
-        }
-        ListElement {
-            word: "Fifteenth word"
-            count: 9
-        }
-    }
+    title: qsTr("Word Statistics")    
 
     header: Item {
         width: root.width
@@ -107,6 +42,7 @@ ApplicationWindow {
         id: chart
         margin: 12
         anchors.fill: parent
+        histogramModel: wordsModel
     }
 
     FileDialog {

@@ -3,6 +3,7 @@ import QtQuick.Shapes
 
 Rectangle {
     id: root
+    property var histogramModel
     property int maxCount: 100
     property int margin: 0
 
@@ -20,17 +21,17 @@ Rectangle {
         spacing: 6
 
         Repeater {
-            model: words_model
+            model: histogramModel
 
-            Item {
+            delegate:Item {
+                id: chartColumn
+
                 width: parent.width - column.padding - column.padding
-                height: (root.height - column.padding) / (words_model.count) - column.spacing
+                height: (root.height - column.padding) / (15) - column.spacing
 
                 Item {
-                    width: parent.width * (model.count / root.maxCount)
+                    width: (parent.width-margin*2) * (Count/maxCount)
                     height: parent.height
-
-
 
                     Rectangle{
                         width: parent.height
@@ -62,17 +63,16 @@ Rectangle {
                     Text {
                         x: 28
                         anchors.verticalCenter: parent.verticalCenter
-                        text: model.word
+                        text: Name
                         color: "white"
                     }
 
                     Text {
                         anchors.left: parent.right
-                        anchors.leftMargin: 6
+                        anchors.leftMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
-                        text: model.count
+                        text: Count
                         color: "white"
-
                     }
                 }
             }
