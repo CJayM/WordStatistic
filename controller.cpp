@@ -17,8 +17,8 @@ void Controller::setQmlRoot(QObject* root)
 	if (root == nullptr)
 		return;
 
-	QObject::connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
-	QObject::connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+	connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
+	connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
 }
 
 void Controller::onSgnStart(QString filePath)
@@ -26,8 +26,13 @@ void Controller::onSgnStart(QString filePath)
 	qDebug() << "Pressed Start button for file " << filePath;
 	_futureParse = QtConcurrent::run(parseFile, filePath);
 	auto modelPtr = &_model;
-	_futureParse.then([modelPtr](QList<WordItem> items){
-		qDebug() << "Received" << items.size();
+	static bool isFirstModelFill = true;
+
+	_futureParse.then([modelPtr](QList<WordItem> items) {
+		if (isFirstModelFill){
+			isFirstModelFill = false;
+			modelPtr->reset({});
+		}
 		modelPtr->reset(items);
 	});
 }
