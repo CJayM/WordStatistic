@@ -2,8 +2,8 @@
 
 #include <QDebug>
 #include <QFile>
-#include <filesystem>
 #include <QtConcurrent>
+#include <filesystem>
 
 Controller::Controller(WordsModel& model, QObject* parent)
     : QObject{parent}
@@ -17,8 +17,8 @@ void Controller::setQmlRoot(QObject* root)
 	if (root == nullptr)
 		return;
 
-	QObject::connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
-	QObject::connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+	connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
+	connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
 }
 
 void Controller::onSgnStart(QString filePath)
@@ -26,8 +26,13 @@ void Controller::onSgnStart(QString filePath)
 	qDebug() << "Pressed Start button for file " << filePath;
 	_futureParse = QtConcurrent::run(parseFile, filePath);
 	auto modelPtr = &_model;
-	_futureParse.then([modelPtr](QList<WordItem> items){
-		qDebug() << "Received" << items.size();
+	static bool isFirstModelFill = true;
+
+	_futureParse.then([modelPtr](QList<WordItem> items) {
+		if (isFirstModelFill){
+			isFirstModelFill = false;
+			modelPtr->reset({});
+		}
 		modelPtr->reset(items);
 	});
 }
@@ -85,5 +90,17 @@ QList<WordItem> parseFile(QString filePath)
 	std::sort(
 	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
 
-	return items.first(15);
+
+	QList<WordItem> result;
+	result.reserve(15);
+	for (int i = 0; i < 15; ++i)
+	{
+		auto it = items.cbegin();
+		int random = rand() % items.size();
+		std::advance(it, random);
+		result.append(*it);
+	}
+
+	// return items.first(15);
+	return result;
 }
