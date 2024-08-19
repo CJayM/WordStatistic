@@ -15,6 +15,7 @@ ApplicationWindow {
     signal sgnReset()
 
     property string filePath: ""
+    required property var wordsModel
 
     Settings {
         property alias x: root.x

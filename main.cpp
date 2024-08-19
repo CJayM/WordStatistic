@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
 	auto controller = std::make_shared<Controller>(model);
 
 	QQmlApplicationEngine engine;
-
-	QQmlContext* context = engine.rootContext();
-	context->setContextProperty("wordsModel", &model);
+	engine.setInitialProperties({
+	  {"wordsModel", QVariant::fromValue(&model)},
+	});
 
 	const QUrl url(QStringLiteral("qrc:/word_statistics/main.qml"));
 	QObject::connect(
