@@ -2,6 +2,7 @@
 
 #include "words_model.h"
 
+#include <QFuture>
 #include <QObject>
 
 class Controller : public QObject
@@ -17,8 +18,14 @@ class Controller : public QObject
     void onSgnStart(QString filePath);
     void onSgnReset();
 
+  protected:
+
+
   private:
     WordsModel& _model;
     QObject* _root;
+    QFuture<QList<WordItem>> _futureParse;
 };
+
+QList<WordItem> parseFile(QString path);
 

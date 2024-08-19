@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFile>
 #include <filesystem>
+#include <QtConcurrent>
 
 Controller::Controller(WordsModel& model, QObject* parent)
     : QObject{parent}
@@ -23,8 +24,21 @@ void Controller::setQmlRoot(QObject* root)
 void Controller::onSgnStart(QString filePath)
 {
 	qDebug() << "Pressed Start button for file " << filePath;
-	_model.generateRandomData();
+	_futureParse = QtConcurrent::run(parseFile, filePath);
+	auto modelPtr = &_model;
+	_futureParse.then([modelPtr](QList<WordItem> items){
+		qDebug() << "Received" << items.size();
+		modelPtr->reset(items);
+	});
+}
 
+void Controller::onSgnReset()
+{
+	_model.reset({});
+}
+
+QList<WordItem> parseFile(QString filePath)
+{
 	if (filePath.startsWith("file:///"))
 		filePath = filePath.right(filePath.size() - 8);
 	std::filesystem::path path = filePath.toStdU16String();
@@ -33,7 +47,7 @@ void Controller::onSgnStart(QString filePath)
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "ERROR reading file" << path.generic_u16string();
-		return;
+		return {};
 	}
 
 	QStringList lines;
@@ -71,10 +85,5 @@ void Controller::onSgnStart(QString filePath)
 	std::sort(
 	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
 
-	_model.reset(items.first(15));
-}
-
-void Controller::onSgnReset()
-{
-	_model.reset({});
+	return items.first(15);
 }

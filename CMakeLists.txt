@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 6.2 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS QuickControls2)
-
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 
 qt_add_executable(appword_statistics
     main.cpp
@@ -43,6 +43,7 @@ target_link_libraries(appword_statistics
 )
 
 target_link_libraries(appword_statistics PRIVATE Qt6::QuickControls2)
+target_link_libraries(appword_statistics PRIVATE Qt6::Concurrent)
 
 include(GNUInstallDirs)
 install(TARGETS appword_statistics
