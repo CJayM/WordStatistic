@@ -90,5 +90,17 @@ QList<WordItem> parseFile(QString filePath)
 	std::sort(
 	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
 
-	return items.first(15);
+
+	QList<WordItem> result;
+	result.reserve(15);
+	for (int i = 0; i < 15; ++i)
+	{
+		auto it = items.cbegin();
+		int random = rand() % items.size();
+		std::advance(it, random);
+		result.append(*it);
+	}
+
+	// return items.first(15);
+	return result;
 }
