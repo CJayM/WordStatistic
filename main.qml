@@ -11,6 +11,8 @@ ApplicationWindow {
     visible: true
     title: qsTr("Word Statistics")
 
+    property bool isFirstReseted: true  // хак для переназначения модели
+
     signal sgnStart(string filePath)
     signal sgnReset()
 
@@ -100,6 +102,19 @@ ApplicationWindow {
                 text: qsTr("Stop")
                 icon.name: "media-playback-stop"
                 onClicked: resetState()
+            }
+        }
+    }
+
+    Connections {
+        target: wordsModel
+        function onDataChanged(){ console.log("Data in the model has been changed");}
+        function onModelReset(){
+            if (isFirstReseted){
+                console.log("First reseted");
+                isFirstReseted = false; // не понимаю, почему repeater не отображает изменение модели при первом сбросе
+                chart.histogramModel = [];
+                chart.histogramModel = wordsModel;
             }
         }
     }
