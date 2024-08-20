@@ -14,9 +14,11 @@ ApplicationWindow {
     title: qsTr("Word Statistics")    
 
     property bool isFirstReseted: true  // хак для переназначения модели
+
     property real proccessProgress: 0;
     property alias state: windowState.state    
     property alias maxCount: chart.maxCount
+    property alias needRandom: checkNeedRandom.checked
 
     signal sgnStart(string filePath)
     signal sgnReset()
@@ -33,6 +35,7 @@ ApplicationWindow {
         property alias height: root.height
         property alias fliePath: root.filePath
         property alias flieName: root.filename
+        property alias needRandom: root.needRandom
     }
 
     header: Item {
@@ -137,7 +140,7 @@ ApplicationWindow {
                 }
 
                 CheckBox{
-                    checked: true
+                    id: checkNeedRandom
                     text: "Случайно"
                     ToolTip.text: "Отображать случайные слова вместо популярных"
                 }

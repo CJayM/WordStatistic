@@ -77,7 +77,7 @@ void Controller::onSgnPause()
 }
 
 void Controller::onSgnReset()
-{	
+{
 	if (_futureWatcher.isRunning())
 		_futureWatcher.cancel();
 	else
@@ -88,8 +88,9 @@ void Controller::onSgnReset()
 }
 
 void Controller::onStatisticsFinished()
-{	
-	if (_futureWatcher.isCanceled()){
+{
+	if (_futureWatcher.isCanceled())
+	{
 		_model.reset({});
 		_root->setProperty("state", "NORMAL");
 		_root->setProperty("proccessProgress", 0);
@@ -109,25 +110,34 @@ void Controller::onStatisticsFinished()
 		for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
 			items.append({i.key(), static_cast<quint16>(i.value())});
 
+		// тоже сделать асинхронно
 		std::sort(
 		  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
 
+		bool needRandom = _root->property("needRandom").toBool();
+		if (needRandom)
+		{
+			for (int i = 0; i < 15; ++i)
+			{
+				int random = rand() % items.size();
+				items.swapItemsAt(i, random);
+			}
+		}
+
 		QList<WordItem> result;
 		result.reserve(15);
+
+		int maxCount = items.first().count;
 		for (int i = 0; i < 15; ++i)
 		{
-			auto it = items.cbegin();
-			int random = rand() % items.size();
-			std::advance(it, random);
-			result.append(*it);
-		}
-		_root->setProperty("state", "NORMAL");
-		_root->setProperty("proccessProgress", 0);
-
-		int maxCount = result.first().count;
-		for(const auto& item: result)
+			const auto& item = items[i];
+			result.append(item);
 			if (item.count > maxCount)
 				maxCount = item.count;
+		}
+
+		_root->setProperty("state", "NORMAL");
+		_root->setProperty("proccessProgress", 0);
 		_root->setProperty("maxCount", maxCount);
 
 		_model.reset(result);
