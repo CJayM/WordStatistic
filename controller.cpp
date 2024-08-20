@@ -88,15 +88,14 @@ void Controller::onSgnReset()
 }
 
 void Controller::onStatisticsFinished()
-{
-	qDebug() << "Statistics calculated";
+{	
 	if (_futureWatcher.isCanceled()){
 		_model.reset({});
 		_root->setProperty("state", "NORMAL");
 		_root->setProperty("proccessProgress", 0);
+		_root->setProperty("maxCount", 0);
 		return;
 	}
-
 
 	if (_futureWatcher.isFinished())
 	{
@@ -122,9 +121,16 @@ void Controller::onStatisticsFinished()
 			std::advance(it, random);
 			result.append(*it);
 		}
-		_model.reset(result);
 		_root->setProperty("state", "NORMAL");
 		_root->setProperty("proccessProgress", 0);
+
+		int maxCount = result.first().count;
+		for(const auto& item: result)
+			if (item.count > maxCount)
+				maxCount = item.count;
+		_root->setProperty("maxCount", maxCount);
+
+		_model.reset(result);
 	}
 }
 

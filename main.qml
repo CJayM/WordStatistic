@@ -15,7 +15,8 @@ ApplicationWindow {
 
     property bool isFirstReseted: true  // хак для переназначения модели
     property real proccessProgress: 0;
-    property alias state: windowState.state
+    property alias state: windowState.state    
+    property alias maxCount: chart.maxCount
 
     signal sgnStart(string filePath)
     signal sgnReset()
