@@ -50,14 +50,17 @@ void Controller::onSgnStart(QString filePath)
 	auto futureWatcher = &_futureWatcher;
 	auto pool = &_pool;
 
+	bool needSlow = _root->property("needSlow").toBool();
+	auto argumentedFilter = [needSlow](const QString& line){return filterSmallLines(line, needSlow);};
+
 	_futureParseFile
-	  .then([futureWatcher, pool](QList<QString> lines) {
+	  .then([futureWatcher, pool, argumentedFilter](QList<QString> lines) {
 		  if (futureWatcher->isRunning())
 			  futureWatcher->cancel();
 		  futureWatcher->setFuture(
 			QtConcurrent::filteredReduced(pool,
 										  lines,
-										  filterSmallLines,
+										  argumentedFilter,
 										  mapWordsStatistics,
 										  QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce));
 	  })
@@ -180,15 +183,16 @@ QList<QString> parseFile(QString filePath)
 	return lines;
 }
 
-bool filterSmallLines(const QString& line)
+bool filterSmallLines(const QString& line, bool needSlow)
 {
-	// slow code
-	int step = 0;
-	int _;
-	while (step < 1000000)
-	{
-		++step;
-		_ = qSin(qDegreesToRadians(step));
+	if (needSlow){
+		int step = 0;
+		int _;
+		while (step < 1000000)
+		{
+			++step;
+			_ = qSin(qDegreesToRadians(step));
+		}
 	}
 
 	if (line.size() < 3)

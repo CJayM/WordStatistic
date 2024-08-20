@@ -41,6 +41,6 @@ class Controller : public QObject
 };
 
 QList<QString> parseFile(QString path);
-bool filterSmallLines(const QString& line);
+bool filterSmallLines(const QString& line, bool needSlow);
 void mapWordsStatistics(QHash<QString, quint32>& result, const QString& line);
 

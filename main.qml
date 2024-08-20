@@ -19,6 +19,7 @@ ApplicationWindow {
     property alias state: windowState.state    
     property alias maxCount: chart.maxCount
     property alias needRandom: checkNeedRandom.checked
+    property alias needSlow: checkSlow.checked
 
     signal sgnStart(string filePath)
     signal sgnReset()
@@ -36,6 +37,7 @@ ApplicationWindow {
         property alias fliePath: root.filePath
         property alias flieName: root.filename
         property alias needRandom: root.needRandom
+        property alias needSlow: root.needSlow
     }
 
     header: Item {
@@ -134,7 +136,7 @@ ApplicationWindow {
                 ToolSeparator{}
 
                 CheckBox{
-                    checked: true
+                    id: checkSlow
                     text: "Замедлять загрузку"
                     ToolTip.text: "Искусственно замедлять загрузку для просмотра изменения прогрессбара"
                 }
