@@ -78,9 +78,10 @@ ApplicationWindow {
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
             var selectedPath = fileOpenDialog.currentFile
-            if (selectedPath !== root.filePath)
-                root.sgnReset()
+            if (selectedPath === root.filePath)
+                return
 
+            root.sgnReset()
             root.filePath = selectedPath
             var parts = root.filePath.split("/")
             if (parts.length > 0)

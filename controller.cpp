@@ -80,6 +80,8 @@ void Controller::onSgnReset()
 {	
 	if (_futureWatcher.isRunning())
 		_futureWatcher.cancel();
+	else
+		_model.reset({});
 
 	_root->setProperty("state", "NORMAL");
 	_root->setProperty("proccessProgress", 0);
