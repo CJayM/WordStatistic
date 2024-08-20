@@ -178,19 +178,6 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: wordsModel
-        function onDataChanged(){ console.log("Data in the model has been changed");}
-        function onModelReset(){
-            if (isFirstReseted){
-                console.log("First reseted");
-                isFirstReseted = false; // не понимаю, почему repeater не отображает изменение модели при первом сбросе
-                chart.histogramModel = [];
-                chart.histogramModel = wordsModel;
-            }
-        }
-    }
-
     StateGroup {
         id: windowState
         state: "NORMAL"
@@ -200,6 +187,9 @@ ApplicationWindow {
             PropertyChanges {target: btnStart; visible: true;}
             PropertyChanges {target: btnStop; enabled: false;}
             PropertyChanges {target: btnPause; visible: false;}
+            PropertyChanges {target: checkNeedRandom; enabled: true;}
+            PropertyChanges {target: checkSlow; enabled: true;}
+            PropertyChanges {target: btnOpen; enabled: true;}
         },
         State {
             name: "LOADING"
@@ -207,6 +197,9 @@ ApplicationWindow {
             PropertyChanges {target: btnStart; visible: false;}
             PropertyChanges {target: btnStop; enabled: false;}
             PropertyChanges {target: btnPause; visible: true;}
+            PropertyChanges {target: checkNeedRandom; enabled: false;}
+            PropertyChanges {target: checkSlow; enabled: false;}
+            PropertyChanges {target: btnOpen; enabled: false;}
         },
         State {
             name: "PAUSED"
@@ -214,6 +207,9 @@ ApplicationWindow {
             PropertyChanges {target: btnStop; enabled: true;}
             PropertyChanges {target: btnStart; visible: true;}
             PropertyChanges {target: btnPause; visible: false;}
+            PropertyChanges {target: checkNeedRandom; enabled: false;}
+            PropertyChanges {target: checkSlow; enabled: false;}
+            PropertyChanges {target: btnOpen; enabled: false;}
         }
     ]}
 
