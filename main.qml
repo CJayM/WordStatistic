@@ -178,19 +178,6 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: wordsModel
-        function onDataChanged(){ console.log("Data in the model has been changed");}
-        function onModelReset(){
-            if (isFirstReseted){
-                console.log("First reseted");
-                isFirstReseted = false; // не понимаю, почему repeater не отображает изменение модели при первом сбросе
-                chart.histogramModel = [];
-                chart.histogramModel = wordsModel;
-            }
-        }
-    }
-
     StateGroup {
         id: windowState
         state: "NORMAL"
