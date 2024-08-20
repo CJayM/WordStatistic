@@ -28,13 +28,21 @@ void Controller::onSgnStart(QString filePath)
 	auto modelPtr = &_model;
 	static bool isFirstModelFill = true;
 
-	_futureParse.then([modelPtr](QList<WordItem> items) {
-		if (isFirstModelFill){
-			isFirstModelFill = false;
-			modelPtr->reset({});
-		}
-		modelPtr->reset(items);
-	});
+	_futureParse
+	  .then([modelPtr](QList<WordItem> items) {
+		  if (isFirstModelFill)
+		  {
+			  isFirstModelFill = false;
+			  modelPtr->reset({});
+		  }
+		  modelPtr->reset(items);
+	  })
+	  .onCanceled([] {
+		  qDebug() << "Canceled";
+	  })
+	  .onFailed([]{
+		  qDebug() << "Failed";
+	  });
 }
 
 void Controller::onSgnReset()
@@ -59,6 +67,8 @@ QList<WordItem> parseFile(QString filePath)
 
 	QTextStream in(&file);
 	in.setEncoding(QStringConverter::System);
+
+	quint32 step = 0;
 	while (!in.atEnd())
 	{
 		QString line = in.readLine().toLower();
@@ -66,6 +76,10 @@ QList<WordItem> parseFile(QString filePath)
 			continue;
 
 		lines.append(line);
+
+		++step;
+		if (step % 5 == 0)
+			QThread::msleep(1);
 	}
 
 	QHash<QString, quint32> statistics;
@@ -89,7 +103,6 @@ QList<WordItem> parseFile(QString filePath)
 
 	std::sort(
 	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
-
 
 	QList<WordItem> result;
 	result.reserve(15);
