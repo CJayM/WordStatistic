@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	  {"wordsModel", QVariant::fromValue(&model)},
 	});
 
-	const QUrl url(QStringLiteral("qrc:/word_statistics/main.qml"));
+	const QUrl url(QStringLiteral("qrc:/word_statistics/Main.qml"));
 	QObject::connect(
 	  &engine,
 	  &QQmlApplicationEngine::objectCreated,

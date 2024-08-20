@@ -4,22 +4,25 @@ import QtQuick.Layouts
 import Qt.labs.platform
 import QtCore
 
+
+
 ApplicationWindow {
     id: root
     width: 640
     height: 480
     visible: true
-    title: qsTr("Word Statistics")
+    title: qsTr("Word Statistics")    
 
     property bool isFirstReseted: true  // хак для переназначения модели
     property real proccessProgress: 0;
+    property alias state: windowState.state
 
     signal sgnStart(string filePath)
     signal sgnReset()
     signal sgnPause()
 
     property string filePath: ""
-    required property var wordsModel
+    required property var wordsModel    
 
     Settings {
         property alias x: root.x
@@ -77,48 +80,71 @@ ApplicationWindow {
 
     footer: ToolBar {
         id: footer
-        visible: true
+        visible: true        
 
-        Rectangle{
-            width: parent.width
-            anchors.bottom: parent.bottom
-            height: 4;
-            color: "gray";
-
-            Rectangle{
-                height: parent.height
-                width: parent.width * root.proccessProgress
-
-                color: "green"
-            }
-        }
-
-        Flow {
+        Item{
             anchors.fill: parent
 
-            Text {
-                id: txtFilepath
-                text: root.filePath
-            }
-            ToolButton {
-                text: qsTr("Open")
-                icon.name: "document-open"
-                onClicked: fileOpenDialog.open()
-            }
-            ToolButton {
-                text: qsTr("Start")
-                icon.name: "media-playback-start"
-                onClicked: root.sgnStart(root.filePath)
-            }
-            ToolButton {
-                text: qsTr("Pause")
-                icon.name: "media-playback-pause"
-                onClicked: root.sgnPause()
-            }
-            ToolButton {
-                text: qsTr("Stop")
-                icon.name: "media-playback-stop"
-                onClicked: resetState()
+            RowLayout{
+                anchors.fill: parent
+                spacing: 4
+
+                Item{
+                    height: 18
+                    Layout.fillWidth: true
+
+                    Rectangle{
+                        id: progressBar
+                        height: parent.height
+                        width: parent.width * root.proccessProgress
+
+                        color: "green"
+                    }
+
+                    Text {
+                        id: txtFilepath
+                        x: 18
+                        color: "white"
+                        text: root.filePath
+                    }
+                }
+
+                ToolButton {
+                    id: btnOpen
+                    text: qsTr("Обзор...")
+                    icon.name: "folder-open"
+
+                    onClicked: fileOpenDialog.open()
+                }
+
+                Item{
+                    width: 10
+                }
+
+                ToolButton {
+                    id: btnStart
+                    ToolTip.text: qsTr("Start")
+                    icon.name: "media-playback-start"
+                    Layout.alignment: Qt.AlignRight
+
+                    onClicked: root.sgnStart(root.filePath)
+                }
+                ToolButton {
+                    id: btnPause
+                    ToolTip.text: qsTr("Pause")
+                    icon.name: "media-playback-pause"
+                    Layout.alignment: Qt.AlignRight
+
+                    onClicked: root.sgnPause()
+                }
+                ToolButton {
+                    id: btnStop
+                    ToolTip.text: qsTr("Stop")
+                    icon.name: "media-playback-stop"
+                    Layout.alignment: Qt.AlignRight
+
+                    onClicked: resetState()
+                }
             }
         }
     }
@@ -135,6 +161,32 @@ ApplicationWindow {
             }
         }
     }
+
+    StateGroup {
+        id: windowState
+        state: "NORMAL"
+        states: [State {
+            name: "NORMAL"
+            PropertyChanges {target: progressBar; visible: false;}
+            PropertyChanges {target: btnStart; visible: true;}
+            PropertyChanges {target: btnStop; enabled: false;}
+            PropertyChanges {target: btnPause; visible: false;}
+        },
+        State {
+            name: "LOADING"
+            PropertyChanges {target: progressBar; visible: true;}
+            PropertyChanges {target: btnStart; visible: false;}
+            PropertyChanges {target: btnStop; enabled: false;}
+            PropertyChanges {target: btnPause; visible: true;}
+        },
+        State {
+            name: "PAUSED"
+            PropertyChanges {target: progressBar; visible: true;}
+            PropertyChanges {target: btnStop; enabled: true;}
+            PropertyChanges {target: btnStart; visible: true;}
+            PropertyChanges {target: btnPause; visible: false;}
+        }
+    ]}
 
     function resetState(){
         console.log("State reset to default");

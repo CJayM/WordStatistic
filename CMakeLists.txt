@@ -21,7 +21,7 @@ qt_add_executable(appword_statistics
 qt_add_qml_module(appword_statistics
     URI word_statistics
     VERSION 1.0
-    QML_FILES main.qml
+    QML_FILES Main.qml
     QML_FILES Histogram.qml
     SOURCES words_model.h words_model.cpp
     SOURCES controller.h controller.cpp

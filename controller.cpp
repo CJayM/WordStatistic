@@ -24,12 +24,15 @@ void Controller::setQmlRoot(QObject* root)
 {
 	_root = root;
 
-	if (root == nullptr)
+	if (_root == nullptr)
 		return;
 
 	connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
 	connect(_root, SIGNAL(sgnPause()), this, SLOT(onSgnPause()));
 	connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+
+	_root->setProperty("state", "NORMAL");
+	_root->setProperty("proccessProgress", 0);
 }
 
 void Controller::onSgnStart(QString filePath)
@@ -38,6 +41,7 @@ void Controller::onSgnStart(QString filePath)
 	if (_futureWatcher.isSuspended())
 	{
 		_futureWatcher.resume();
+		_root->setProperty("state", "LOADING");
 		return;
 	}
 
@@ -59,6 +63,8 @@ void Controller::onSgnStart(QString filePath)
 	  })
 	  .onCanceled([] { qDebug() << "Canceled"; })
 	  .onFailed([] { qDebug() << "Failed"; });
+
+	_root->setProperty("state", "LOADING");
 }
 
 void Controller::onSgnPause()
@@ -66,6 +72,7 @@ void Controller::onSgnPause()
 	if (_futureWatcher.isRunning())
 	{
 		_futureWatcher.suspend();
+		_root->setProperty("state", "PAUSED");
 	}
 }
 
@@ -73,14 +80,18 @@ void Controller::onSgnReset()
 {	
 	if (_futureWatcher.isRunning())
 		_futureWatcher.cancel();
+
+	_root->setProperty("state", "NORMAL");
+	_root->setProperty("proccessProgress", 0);
 }
 
 void Controller::onStatisticsFinished()
 {
 	qDebug() << "Statistics calculated";
 	if (_futureWatcher.isCanceled()){
-		qDebug() << "Canceled";
 		_model.reset({});
+		_root->setProperty("state", "NORMAL");
+		_root->setProperty("proccessProgress", 0);
 		return;
 	}
 
@@ -110,6 +121,8 @@ void Controller::onStatisticsFinished()
 			result.append(*it);
 		}
 		_model.reset(result);
+		_root->setProperty("state", "NORMAL");
+		_root->setProperty("proccessProgress", 0);
 	}
 }
 
