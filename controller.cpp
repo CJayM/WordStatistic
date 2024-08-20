@@ -8,7 +8,17 @@
 Controller::Controller(WordsModel& model, QObject* parent)
     : QObject{parent}
     , _model(model)
-{}
+{
+	connect(&_futureWatcher, &StatisticsFutureWatcher::finished, this, &Controller::onStatisticsFinished);
+	connect(&_futureWatcher,
+			&StatisticsFutureWatcher::progressRangeChanged,
+			this,
+			&Controller::onStatisticsPropgressRangeChanged);
+	connect(&_futureWatcher,
+			&StatisticsFutureWatcher::progressValueChanged,
+			this,
+			&Controller::onStatisticsPropgressChanged);
+}
 
 void Controller::setQmlRoot(QObject* root)
 {
@@ -24,25 +34,23 @@ void Controller::setQmlRoot(QObject* root)
 void Controller::onSgnStart(QString filePath)
 {
 	qDebug() << "Pressed Start button for file " << filePath;
-	_futureParse = QtConcurrent::run(parseFile, filePath);
-	auto modelPtr = &_model;
-	static bool isFirstModelFill = true;
+	_futureParseFile = QtConcurrent::run(parseFile, filePath);
+	auto futureWatcher = &_futureWatcher;
+	auto pool = &_pool;
 
-	_futureParse
-	  .then([modelPtr](QList<WordItem> items) {
-		  if (isFirstModelFill)
-		  {
-			  isFirstModelFill = false;
-			  modelPtr->reset({});
-		  }
-		  modelPtr->reset(items);
+	_futureParseFile
+	  .then([futureWatcher, pool](QList<QString> lines) {
+		  if (futureWatcher->isRunning())
+			  futureWatcher->cancel();
+		  futureWatcher->setFuture(
+			QtConcurrent::filteredReduced(pool,
+										  lines,
+										  filterSmallLines,
+										  mapWordsStatistics,
+										  QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce));
 	  })
-	  .onCanceled([] {
-		  qDebug() << "Canceled";
-	  })
-	  .onFailed([]{
-		  qDebug() << "Failed";
-	  });
+	  .onCanceled([] { qDebug() << "Canceled"; })
+	  .onFailed([] { qDebug() << "Failed"; });
 }
 
 void Controller::onSgnReset()
@@ -50,52 +58,12 @@ void Controller::onSgnReset()
 	_model.reset({});
 }
 
-QList<WordItem> parseFile(QString filePath)
+void Controller::onStatisticsFinished()
 {
-	if (filePath.startsWith("file:///"))
-		filePath = filePath.right(filePath.size() - 8);
-	std::filesystem::path path = filePath.toStdU16String();
-
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		qDebug() << "ERROR reading file" << path.generic_u16string();
-		return {};
-	}
-
-	QStringList lines;
-
-	QTextStream in(&file);
-	in.setEncoding(QStringConverter::System);
-
-	quint32 step = 0;
-	while (!in.atEnd())
-	{
-		QString line = in.readLine().toLower();
-		if (line.isEmpty())
-			continue;
-
-		lines.append(line);
-
-		++step;
-		if (step % 5 == 0)
-			QThread::msleep(1);
-	}
-
-	QHash<QString, quint32> statistics;
-	for (const auto& line : lines)
-	{
-		auto parts = line.split(" ");
-		for (const auto& part : parts)
-		{
-			if (part.size() < 3)
-				continue;
-
-			if (statistics.contains(part) == false)
-				statistics[part] = 0;
-			statistics[part] = statistics[part] + 1;
-		}
-	}
+	qDebug() << "Statistics calculated";
+	auto statistics = _futureWatcher.result();
+	if (statistics.empty())
+		return;
 
 	QList<WordItem> items;
 	for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
@@ -114,6 +82,69 @@ QList<WordItem> parseFile(QString filePath)
 		result.append(*it);
 	}
 
-	// return items.first(15);
-	return result;
+	_model.reset(result);
+}
+
+void Controller::onStatisticsPropgressRangeChanged(int minimum, int maximum)
+{
+	qDebug() << "Progress range changed" << minimum << maximum;
+}
+
+void Controller::onStatisticsPropgressChanged(int progress)
+{
+	qDebug() << "Progress: " << progress;
+}
+
+QList<QString> parseFile(QString filePath)
+{
+	if (filePath.startsWith("file:///"))
+		filePath = filePath.right(filePath.size() - 8);
+	std::filesystem::path path = filePath.toStdU16String();
+
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qDebug() << "ERROR reading file" << path.generic_u16string();
+		return {};
+	}
+
+	QStringList lines;
+
+	QTextStream in(&file);
+	in.setEncoding(QStringConverter::System);
+
+	while (!in.atEnd())
+		lines.append(in.readLine().toLower());
+
+	return lines;
+}
+
+bool filterSmallLines(const QString& line)
+{
+	if (line.size() < 3)
+		return false;
+	return true;
+}
+
+void mapWordsStatistics(QHash<QString, quint32>& result, const QString& line)
+{
+	auto parts = line.split(" ");
+	for (const auto& part : parts)
+	{
+		if (part.size() < 3)
+			continue;
+
+		if (result.contains(part) == false)
+			result[part] = 0;
+		result[part] = result[part] + 1;
+	}
+
+	// slow code
+	int step = 0;
+	int _;
+	while (step < 100000)
+	{
+		++step;
+		_ = qSin(qDegreesToRadians(step));
+	}
 }

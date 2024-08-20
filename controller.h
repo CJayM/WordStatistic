@@ -3,7 +3,10 @@
 #include "words_model.h"
 
 #include <QFuture>
+#include <QFutureWatcher>
 #include <QObject>
+
+using StatisticsFutureWatcher = QFutureWatcher<QHash<QString, quint32>>;
 
 class Controller : public QObject
 {
@@ -18,14 +21,23 @@ class Controller : public QObject
     void onSgnStart(QString filePath);
     void onSgnReset();
 
+  private slots:
+    void onStatisticsFinished();
+    void onStatisticsPropgressRangeChanged(int minimum, int maximum);
+    void onStatisticsPropgressChanged(int progress);
+
   protected:
 
 
   private:
     WordsModel& _model;
     QObject* _root;
-    QFuture<QList<WordItem>> _futureParse;
+    QFuture<QList<QString>> _futureParseFile;
+    StatisticsFutureWatcher _futureWatcher;
+    QThreadPool _pool;
 };
 
-QList<WordItem> parseFile(QString path);
+QList<QString> parseFile(QString path);
+bool filterSmallLines(const QString& line);
+void mapWordsStatistics(QHash<QString, quint32>& result, const QString& line);
 
