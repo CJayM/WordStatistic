@@ -35,7 +35,8 @@ void Controller::setQmlRoot(QObject* root)
 void Controller::onSgnStart(QString filePath)
 {
 	// если была нажата пауза
-	if (_futureWatcher.isSuspended()){
+	if (_futureWatcher.isSuspended())
+	{
 		_futureWatcher.resume();
 		return;
 	}
@@ -61,42 +62,55 @@ void Controller::onSgnStart(QString filePath)
 }
 
 void Controller::onSgnPause()
-{	
-	if (_futureWatcher.isRunning()){
+{
+	if (_futureWatcher.isRunning())
+	{
 		_futureWatcher.suspend();
 	}
 }
 
 void Controller::onSgnReset()
-{
-	_model.reset({});
+{	
+	if (_futureWatcher.isRunning())
+		_futureWatcher.cancel();
 }
 
 void Controller::onStatisticsFinished()
 {
 	qDebug() << "Statistics calculated";
-	auto statistics = _futureWatcher.result();
-	if (statistics.empty())
+	if (_futureWatcher.isCanceled()){
+		qDebug() << "Canceled";
+		_model.reset({});
 		return;
-
-	QList<WordItem> items;
-	for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
-		items.append({i.key(), static_cast<quint16>(i.value())});
-
-	std::sort(
-	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
-
-	QList<WordItem> result;
-	result.reserve(15);
-	for (int i = 0; i < 15; ++i)
-	{
-		auto it = items.cbegin();
-		int random = rand() % items.size();
-		std::advance(it, random);
-		result.append(*it);
 	}
 
-	_model.reset(result);
+
+	if (_futureWatcher.isFinished())
+	{
+		auto statistics = _futureWatcher.result();
+		if (statistics.empty())
+		{
+			return;
+		}
+
+		QList<WordItem> items;
+		for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
+			items.append({i.key(), static_cast<quint16>(i.value())});
+
+		std::sort(
+		  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
+
+		QList<WordItem> result;
+		result.reserve(15);
+		for (int i = 0; i < 15; ++i)
+		{
+			auto it = items.cbegin();
+			int random = rand() % items.size();
+			std::advance(it, random);
+			result.append(*it);
+		}
+		_model.reset(result);
+	}
 }
 
 void Controller::onStatisticsPropgressRangeChanged(int minimum, int maximum)
@@ -107,7 +121,7 @@ void Controller::onStatisticsPropgressRangeChanged(int minimum, int maximum)
 
 void Controller::onStatisticsPropgressChanged(int progress)
 {
-	float percent =  float(progress)/(_progressMax - _progressMin);	
+	float percent = float(progress) / (_progressMax - _progressMin);
 	_root->setProperty("proccessProgress", percent);
 }
 

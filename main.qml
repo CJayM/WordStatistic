@@ -138,7 +138,6 @@ ApplicationWindow {
 
     function resetState(){
         console.log("State reset to default");
-        root.filePath = "";
         root.sgnReset();
     }
 }
