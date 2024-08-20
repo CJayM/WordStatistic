@@ -2,29 +2,165 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QtConcurrent>
 #include <filesystem>
 
 Controller::Controller(WordsModel& model, QObject* parent)
     : QObject{parent}
     , _model(model)
-{}
+{
+	connect(&_futureWatcher, &StatisticsFutureWatcher::finished, this, &Controller::onStatisticsFinished);
+	connect(&_futureWatcher,
+			&StatisticsFutureWatcher::progressRangeChanged,
+			this,
+			&Controller::onStatisticsPropgressRangeChanged);
+	connect(&_futureWatcher,
+			&StatisticsFutureWatcher::progressValueChanged,
+			this,
+			&Controller::onStatisticsPropgressChanged);
+}
 
 void Controller::setQmlRoot(QObject* root)
 {
 	_root = root;
 
-	if (root == nullptr)
+	if (_root == nullptr)
 		return;
 
-	QObject::connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
-	QObject::connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+	connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
+	connect(_root, SIGNAL(sgnPause()), this, SLOT(onSgnPause()));
+	connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
+
+	_root->setProperty("state", "NORMAL");
+	_root->setProperty("proccessProgress", 0);
 }
 
 void Controller::onSgnStart(QString filePath)
 {
-	qDebug() << "Pressed Start button for file " << filePath;
-	_model.generateRandomData();
+	// если была нажата пауза
+	if (_futureWatcher.isSuspended())
+	{
+		_futureWatcher.resume();
+		_root->setProperty("state", "LOADING");
+		return;
+	}
 
+	// если новый запуск
+	_futureParseFile = QtConcurrent::run(parseFile, filePath);
+	auto futureWatcher = &_futureWatcher;
+	auto pool = &_pool;
+
+	bool needSlow = _root->property("needSlow").toBool();
+	auto argumentedFilter = [needSlow](const QString& line){return filterSmallLines(line, needSlow);};
+
+	_futureParseFile
+	  .then([futureWatcher, pool, argumentedFilter](QList<QString> lines) {
+		  if (futureWatcher->isRunning())
+			  futureWatcher->cancel();
+		  futureWatcher->setFuture(
+			QtConcurrent::filteredReduced(pool,
+										  lines,
+										  argumentedFilter,
+										  mapWordsStatistics,
+										  QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce));
+	  })
+	  .onCanceled([] { qDebug() << "Canceled"; })
+	  .onFailed([] { qDebug() << "Failed"; });
+
+	_root->setProperty("state", "LOADING");
+}
+
+void Controller::onSgnPause()
+{
+	if (_futureWatcher.isRunning())
+	{
+		_futureWatcher.suspend();
+		_root->setProperty("state", "PAUSED");
+	}
+}
+
+void Controller::onSgnReset()
+{
+	if (_futureWatcher.isRunning())
+		_futureWatcher.cancel();
+	else
+		_model.reset({});
+
+	_root->setProperty("state", "NORMAL");
+	_root->setProperty("proccessProgress", 0);
+}
+
+void Controller::onStatisticsFinished()
+{
+	if (_futureWatcher.isCanceled())
+	{
+		_model.reset({});
+		_root->setProperty("state", "NORMAL");
+		_root->setProperty("proccessProgress", 0);
+		_root->setProperty("maxCount", 0);
+		return;
+	}
+
+	if (_futureWatcher.isFinished())
+	{
+		auto statistics = _futureWatcher.result();
+		if (statistics.empty())
+		{
+			return;
+		}
+
+		QList<WordItem> items;
+		for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
+			items.append({i.key(), static_cast<quint16>(i.value())});
+
+		// тоже сделать асинхронно
+		std::sort(
+		  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
+
+		bool needRandom = _root->property("needRandom").toBool();
+		if (needRandom)
+		{
+			for (int i = 0; i < 15; ++i)
+			{
+				int random = rand() % items.size();
+				items.swapItemsAt(i, random);
+			}
+		}
+
+		QList<WordItem> result;
+		result.reserve(15);
+
+		int maxCount = items.first().count;
+		for (int i = 0; i < 15; ++i)
+		{
+			const auto& item = items[i];
+			result.append(item);
+			if (item.count > maxCount)
+				maxCount = item.count;
+		}
+
+		_root->setProperty("state", "NORMAL");
+		_root->setProperty("proccessProgress", 0);
+		_root->setProperty("maxCount", maxCount);
+
+		_model.reset(result);
+	}
+}
+
+void Controller::onStatisticsPropgressRangeChanged(int minimum, int maximum)
+{
+	_progressMin = minimum;
+	_progressMax = maximum;
+}
+
+void Controller::onStatisticsPropgressChanged(int progress)
+{
+	float percent = float(progress) / (_progressMax - _progressMin);
+	_root->setProperty("proccessProgress", percent);
+}
+
+QList<QString> parseFile(QString filePath)
+{
 	if (filePath.startsWith("file:///"))
 		filePath = filePath.right(filePath.size() - 8);
 	std::filesystem::path path = filePath.toStdU16String();
@@ -33,48 +169,47 @@ void Controller::onSgnStart(QString filePath)
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qDebug() << "ERROR reading file" << path.generic_u16string();
-		return;
+		return {};
 	}
 
 	QStringList lines;
 
 	QTextStream in(&file);
 	in.setEncoding(QStringConverter::System);
+
 	while (!in.atEnd())
-	{
-		QString line = in.readLine().toLower();
-		if (line.isEmpty())
-			continue;
+		lines.append(in.readLine().toLower());
 
-		lines.append(line);
-	}
+	return lines;
+}
 
-	QHash<QString, quint32> statistics;
-	for (const auto& line : lines)
-	{
-		auto parts = line.split(" ");
-		for (const auto& part : parts)
+bool filterSmallLines(const QString& line, bool needSlow)
+{
+	if (needSlow){
+		int step = 0;
+		int _;
+		while (step < 1000000)
 		{
-			if (part.size() < 3)
-				continue;
-
-			if (statistics.contains(part) == false)
-				statistics[part] = 0;
-			statistics[part] = statistics[part] + 1;
+			++step;
+			_ = qSin(qDegreesToRadians(step));
 		}
 	}
 
-	QList<WordItem> items;
-	for (auto i = statistics.cbegin(), end = statistics.cend(); i != end; ++i)
-		items.append({i.key(), static_cast<quint16>(i.value())});
-
-	std::sort(
-	  items.begin(), items.end(), [](const WordItem& a, const WordItem& b) { return a.count > b.count; });
-
-	_model.reset(items.first(15));
+	if (line.size() < 3)
+		return false;
+	return true;
 }
 
-void Controller::onSgnReset()
+void mapWordsStatistics(QHash<QString, quint32>& result, const QString& line)
 {
-	_model.reset({});
+	auto parts = line.split(" ");
+	for (const auto& part : parts)
+	{
+		if (part.size() < 3)
+			continue;
+
+		if (result.contains(part) == false)
+			result[part] = 0;
+		result[part] = result[part] + 1;
+	}
 }

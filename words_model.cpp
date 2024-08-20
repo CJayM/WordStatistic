@@ -39,8 +39,9 @@ void WordsModel::reset(QList<WordItem> statistics)
 	_data.clear();
 	for(const auto& item: statistics)
 		_data.append(item);
-
 	endResetModel();
+
+	qDebug() << "Model has" << rowCount() << "items";
 }
 
 int WordsModel::rowCount(const QModelIndex& parent) const

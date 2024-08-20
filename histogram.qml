@@ -3,9 +3,9 @@ import QtQuick.Shapes
 
 Rectangle {
     id: root
-    property var histogramModel
-    property int maxCount: 100
-    property int margin: 0
+    property var histogramModel    
+    property int margin: 0    
+    property int maxCount: 0
 
     anchors.leftMargin: margin
     anchors.rightMargin: margin
@@ -33,47 +33,57 @@ Rectangle {
                     width: (parent.width-margin*2) * (Count/maxCount)
                     height: parent.height
 
-                    Rectangle{
-                        width: parent.height
-                        height: parent.width
-                        anchors.centerIn: parent
-                        rotation: 90
-                        radius: 2
+                    Item{
+                        id: chartRect
+                        width: parent.width -18
+                        height: parent.height
+                        x: 18
+
+                        Rectangle{
+                            width: parent.height
+                            height: parent.width
+                            anchors.centerIn: parent
+                            rotation: 90
+                            radius: 2
 
 
-                    gradient: Gradient {
-                        GradientStop {
-                            position: 0.0
-                            color: "#0ca9c8"
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: 0.0
+                                    color: "#0ca9c8"
+                                }
+                                GradientStop {
+                                    position: 1.0
+                                    color: "#1b2d3e"
+                                }
+                            }
                         }
-                        GradientStop {
-                            position: 1.0
-                            color: "#1b2d3e"
+
+                        Text {
+                            id: lblName
+                            x: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: Name
+                            color: "white"
                         }
-                    }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: lblName.width > chartRect.width ? lblName.right : chartRect.right
+                            anchors.rightMargin: -14
+                            text:  Count
+                            color: "white"
+                        }
                     }
 
                     Text {
-                        x: 8
+                        x: 0
                         anchors.verticalCenter: parent.verticalCenter
                         text: index + 1
                         color: "white"
                     }
 
-                    Text {
-                        x: 28
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: Name
-                        color: "white"
-                    }
 
-                    Text {
-                        anchors.left: parent.right
-                        anchors.leftMargin: 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: Count
-                        color: "white"
-                    }
                 }
             }
         }
