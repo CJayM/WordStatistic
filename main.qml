@@ -121,16 +121,28 @@ ApplicationWindow {
 
                 ToolButton {
                     id: btnOpen
-                    text: qsTr("Обзор...")
+                    ToolTip.text: "Указать файл, статистику которого следует рассчитывать"
                     icon.name: "folder-open"
 
                     onClicked: fileOpenDialog.open()
                 }
+                ToolSeparator{}
 
-                Item{
-                    width: 10
+                CheckBox{
+                    checked: true
+                    text: "Замедлять загрузку"
+                    ToolTip.text: "Искусственно замедлять загрузку для просмотра изменения прогрессбара"
                 }
 
+                CheckBox{
+                    checked: true
+                    text: "Случайно"
+                    ToolTip.text: "Отображать случайные слова вместо популярных"
+                }
+
+
+
+                ToolSeparator{}
                 ToolButton {
                     id: btnStart
                     ToolTip.text: qsTr("Start")
