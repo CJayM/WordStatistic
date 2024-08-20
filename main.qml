@@ -22,6 +22,7 @@ ApplicationWindow {
     signal sgnPause()
 
     property string filePath: ""
+    property string filename: ""
     required property var wordsModel    
 
     Settings {
@@ -30,6 +31,7 @@ ApplicationWindow {
         property alias width: root.width
         property alias height: root.height
         property alias fliePath: root.filePath
+        property alias flieName: root.filename
     }
 
     header: Item {
@@ -37,11 +39,12 @@ ApplicationWindow {
         height: 22
 
         Text {
+            id: headerText
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 4
             font.pointSize: 18
-            text: "Статистика слов в файле"
+            text: "Статистика слов в файле: " + root.filename
             color: "white"
         }
     }
@@ -74,7 +77,10 @@ ApplicationWindow {
         nameFilters: ["Text files (*.txt)", "Markdown files (*.md)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
-            root.filePath = fileOpenDialog.currentFile;
+            root.filePath = fileOpenDialog.currentFile
+            var parts = root.filePath.split("/")
+            if (parts.length > 0)
+                root.filename = parts[parts.length - 1];
         }
     }
 
@@ -189,7 +195,6 @@ ApplicationWindow {
     ]}
 
     function resetState(){
-        console.log("State reset to default");
         root.sgnReset();
     }
 }
