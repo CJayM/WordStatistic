@@ -12,6 +12,7 @@ ApplicationWindow {
     title: qsTr("Word Statistics")
 
     property bool isFirstReseted: true  // хак для переназначения модели
+    property real proccessProgress: 0;
 
     signal sgnStart(string filePath)
     signal sgnReset()
@@ -76,6 +77,20 @@ ApplicationWindow {
     footer: ToolBar {
         id: footer
         visible: true
+
+        Rectangle{
+            width: parent.width
+            anchors.bottom: parent.bottom
+            height: 4;
+            color: "gray";
+
+            Rectangle{
+                height: parent.height
+                width: parent.width * root.proccessProgress
+
+                color: "green"
+            }
+        }
 
         Flow {
             anchors.fill: parent

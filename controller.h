@@ -35,6 +35,8 @@ class Controller : public QObject
     QFuture<QList<QString>> _futureParseFile;
     StatisticsFutureWatcher _futureWatcher;
     QThreadPool _pool;
+    int _progressMin;
+    int _progressMax;
 };
 
 QList<QString> parseFile(QString path);

@@ -87,12 +87,14 @@ void Controller::onStatisticsFinished()
 
 void Controller::onStatisticsPropgressRangeChanged(int minimum, int maximum)
 {
-	qDebug() << "Progress range changed" << minimum << maximum;
+	_progressMin = minimum;
+	_progressMax = maximum;
 }
 
 void Controller::onStatisticsPropgressChanged(int progress)
 {
-	qDebug() << "Progress: " << progress;
+	float percent =  float(progress)/(_progressMax - _progressMin);	
+	_root->setProperty("proccessProgress", percent);
 }
 
 QList<QString> parseFile(QString filePath)
@@ -121,6 +123,15 @@ QList<QString> parseFile(QString filePath)
 
 bool filterSmallLines(const QString& line)
 {
+	// slow code
+	int step = 0;
+	int _;
+	while (step < 1000000)
+	{
+		++step;
+		_ = qSin(qDegreesToRadians(step));
+	}
+
 	if (line.size() < 3)
 		return false;
 	return true;
@@ -137,14 +148,5 @@ void mapWordsStatistics(QHash<QString, quint32>& result, const QString& line)
 		if (result.contains(part) == false)
 			result[part] = 0;
 		result[part] = result[part] + 1;
-	}
-
-	// slow code
-	int step = 0;
-	int _;
-	while (step < 100000)
-	{
-		++step;
-		_ = qSin(qDegreesToRadians(step));
 	}
 }
