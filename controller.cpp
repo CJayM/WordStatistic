@@ -28,12 +28,19 @@ void Controller::setQmlRoot(QObject* root)
 		return;
 
 	connect(_root, SIGNAL(sgnStart(QString)), this, SLOT(onSgnStart(QString)));
+	connect(_root, SIGNAL(sgnPause()), this, SLOT(onSgnPause()));
 	connect(_root, SIGNAL(sgnReset()), this, SLOT(onSgnReset()));
 }
 
 void Controller::onSgnStart(QString filePath)
 {
-	qDebug() << "Pressed Start button for file " << filePath;
+	// если была нажата пауза
+	if (_futureWatcher.isSuspended()){
+		_futureWatcher.resume();
+		return;
+	}
+
+	// если новый запуск
 	_futureParseFile = QtConcurrent::run(parseFile, filePath);
 	auto futureWatcher = &_futureWatcher;
 	auto pool = &_pool;
@@ -51,6 +58,13 @@ void Controller::onSgnStart(QString filePath)
 	  })
 	  .onCanceled([] { qDebug() << "Canceled"; })
 	  .onFailed([] { qDebug() << "Failed"; });
+}
+
+void Controller::onSgnPause()
+{	
+	if (_futureWatcher.isRunning()){
+		_futureWatcher.suspend();
+	}
 }
 
 void Controller::onSgnReset()

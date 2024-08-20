@@ -16,6 +16,7 @@ ApplicationWindow {
 
     signal sgnStart(string filePath)
     signal sgnReset()
+    signal sgnPause()
 
     property string filePath: ""
     required property var wordsModel
@@ -112,6 +113,7 @@ ApplicationWindow {
             ToolButton {
                 text: qsTr("Pause")
                 icon.name: "media-playback-pause"
+                onClicked: root.sgnPause()
             }
             ToolButton {
                 text: qsTr("Stop")

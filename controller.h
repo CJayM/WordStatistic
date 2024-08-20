@@ -19,6 +19,7 @@ class Controller : public QObject
   signals:
   public slots:
     void onSgnStart(QString filePath);
+    void onSgnPause();
     void onSgnReset();
 
   private slots:
