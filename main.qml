@@ -77,7 +77,11 @@ ApplicationWindow {
         nameFilters: ["Text files (*.txt)", "Markdown files (*.md)"]
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
-            root.filePath = fileOpenDialog.currentFile
+            var selectedPath = fileOpenDialog.currentFile
+            if (selectedPath !== root.filePath)
+                root.sgnReset()
+
+            root.filePath = selectedPath
             var parts = root.filePath.split("/")
             if (parts.length > 0)
                 root.filename = parts[parts.length - 1];
